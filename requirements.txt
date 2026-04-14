@@ -1,0 +1,4 @@
+git+https://github.com/jonesfernandess/uazapi-python.git
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-dotenv>=1.0
