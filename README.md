@@ -1,51 +1,75 @@
 # uazapi-bot
 
-Bot WhatsApp standalone usando [uazapi-python](https://github.com/jonesfernandess/uazapi-python) + FastAPI. Sem CLI TypeScript, sem credenciais no código-fonte.
+Bot WhatsApp usando [uazapi-python](https://github.com/jonesfernandess/uazapi-python) + FastAPI.
 
-## Setup em 3 passos
+## Variáveis de ambiente
 
-### 1. Instalar dependências
+O bot não armazena credenciais em arquivos. Tudo vem do ambiente:
 
-```bash
-cd uazapi-bot
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+| Variável | Obrigatória | Descrição |
+|----------|-------------|-----------|
+| `UAZAPI_BASE_URL` | sim | URL da instância UAZAPI |
+| `UAZAPI_TOKEN` | sim | Token da instância |
+| `UAZAPI_ADMIN_TOKEN` | não | Token admin |
+| `WEBHOOK_URL` | não | URL pública para registrar o webhook no UAZAPI |
+
+## Deploy
+
+### Railway / Render / Heroku
+
+1. Faça fork ou clone deste repositório
+2. Crie um novo serviço apontando para o repo
+3. Defina as variáveis de ambiente no painel da plataforma
+4. Deploy — o bot sobe automaticamente
+
+### Docker
+
+```dockerfile
+FROM python:3.12-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-### 2. Configurar credenciais
+```bash
+docker build -t uazapi-bot .
+docker run -p 8000:8000 \
+  -e UAZAPI_BASE_URL=https://sua-instancia.uazapi.com \
+  -e UAZAPI_TOKEN=seu-token \
+  -e WEBHOOK_URL=https://seu-dominio.com \
+  uazapi-bot
+```
 
-Copie o arquivo de exemplo e preencha com suas credenciais:
+### VPS
+
+```bash
+git clone https://github.com/jonesfernandess/uazapi-bot
+cd uazapi-bot
+pip install -r requirements.txt
+
+export UAZAPI_BASE_URL=https://sua-instancia.uazapi.com
+export UAZAPI_TOKEN=seu-token
+export WEBHOOK_URL=https://seu-dominio.com
+
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+## Desenvolvimento local
 
 ```bash
 cp .env.example .env
-```
-
-```ini
-# .env  ← nunca sobe pro git, já está no .gitignore
-UAZAPI_BASE_URL=https://free.uazapi.com
-UAZAPI_TOKEN=seu-token-aqui
-UAZAPI_ADMIN_TOKEN=seu-admin-token-aqui  # opcional
-
-BOT_PORT=8000
-```
-
-O `main.py` carrega o `.env` automaticamente via `python-dotenv` — nenhuma credencial fica no código.
-
-### 3. Rodar o bot
-
-```bash
+# preencha o .env com suas credenciais de dev
+pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-Para receber webhooks em dev local, use [ngrok](https://ngrok.com):
+Para expor o webhook localmente, use [ngrok](https://ngrok.com):
 
 ```bash
 ngrok http 8000
-```
-
-```bash
-# na outra aba, com a URL gerada pelo ngrok:
-WEBHOOK_URL=https://xxxx.ngrok.io uvicorn main:app --reload
+# use a URL gerada como WEBHOOK_URL no .env
 ```
 
 ## Endpoints
@@ -56,10 +80,9 @@ WEBHOOK_URL=https://xxxx.ngrok.io uvicorn main:app --reload
 | `POST` | `/send` | Envia mensagem programaticamente |
 | `POST` | `/webhook` | Recebe eventos do UAZAPI |
 
-### Exemplo de envio via curl
-
 ```bash
-curl -X POST http://localhost:8000/send \
+# Enviar mensagem via API
+curl -X POST https://seu-dominio.com/send \
   -H "Content-Type: application/json" \
   -d '{"number": "5511999999999", "text": "Olá!"}'
 ```
@@ -72,23 +95,6 @@ curl -X POST http://localhost:8000/send \
 | status | Status da conexão |
 | ping | pong |
 | ajuda | Menu de comandos |
-
-## Como funciona — sem credencial no código
-
-O `main.py` usa `UazapiClient()` sem argumentos. O SDK ([uazapi-python](https://github.com/jonesfernandess/uazapi-python)) resolve as credenciais nesta ordem:
-
-1. Variáveis de ambiente (`UAZAPI_BASE_URL`, `UAZAPI_TOKEN`) — carregadas do `.env`
-2. `~/.uazapi/config.json` — para uso em máquina local sem `.env`
-3. `~/.uazapi-cli/config.json` — fallback para quem usa a CLI TypeScript
-
-```python
-# main.py — sem nenhuma credencial hardcoded
-load_dotenv()
-
-client = UazapiClient()  # lê do ambiente
-```
-
-A CLI TypeScript (`uazapi-cli`) **não precisa estar instalada**.
 
 ## Licença
 
