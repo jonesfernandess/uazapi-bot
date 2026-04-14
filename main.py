@@ -1,9 +1,8 @@
 """
-uazapi-bot — a real standalone WhatsApp bot using uazapi-python.
+uazapi-bot — WhatsApp bot using uazapi-python + FastAPI.
 
-Zero CLI dependency: credentials come from:
-  1. .env file / environment variables (UAZAPI_BASE_URL, UAZAPI_TOKEN)
-  2. ~/.uazapi/config.json  (written by setup.py or save_config())
+Credentials via environment variables (UAZAPI_BASE_URL, UAZAPI_TOKEN).
+For local dev, put them in a .env file — load_dotenv() picks it up.
 
 Start:
     uvicorn main:app --reload --port 8000
@@ -24,7 +23,7 @@ app = FastAPI(title="uazapi-bot")
 # ---------------------------------------------------------------------------
 # Synchronous client used for startup/shutdown and non-async endpoints
 # ---------------------------------------------------------------------------
-client = UazapiClient()          # reads env vars or ~/.uazapi/config.json
+client = UazapiClient()          # reads from UAZAPI_BASE_URL + UAZAPI_TOKEN
 
 
 # ---------------------------------------------------------------------------

@@ -4,7 +4,7 @@ Bot WhatsApp usando [uazapi-python](https://github.com/jonesfernandess/uazapi-py
 
 ## Variáveis de ambiente
 
-O bot não armazena credenciais em arquivos. Tudo vem do ambiente:
+O bot não armazena credenciais em arquivos — tudo vem do ambiente:
 
 | Variável | Obrigatória | Descrição |
 |----------|-------------|-----------|
@@ -17,24 +17,16 @@ O bot não armazena credenciais em arquivos. Tudo vem do ambiente:
 
 ### Railway / Render / Heroku
 
-1. Faça fork ou clone deste repositório
-2. Crie um novo serviço apontando para o repo
+1. Fork este repositório
+2. Crie um serviço apontando para o repo
 3. Defina as variáveis de ambiente no painel da plataforma
 4. Deploy — o bot sobe automaticamente
 
 ### Docker
 
-```dockerfile
-FROM python:3.12-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-COPY . .
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
 ```bash
 docker build -t uazapi-bot .
+
 docker run -p 8000:8000 \
   -e UAZAPI_BASE_URL=https://sua-instancia.uazapi.com \
   -e UAZAPI_TOKEN=seu-token \
@@ -49,10 +41,9 @@ git clone https://github.com/jonesfernandess/uazapi-bot
 cd uazapi-bot
 pip install -r requirements.txt
 
-export UAZAPI_BASE_URL=https://sua-instancia.uazapi.com
-export UAZAPI_TOKEN=seu-token
-export WEBHOOK_URL=https://seu-dominio.com
-
+UAZAPI_BASE_URL=https://sua-instancia.uazapi.com \
+UAZAPI_TOKEN=seu-token \
+WEBHOOK_URL=https://seu-dominio.com \
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
@@ -60,7 +51,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 
 ```bash
 cp .env.example .env
-# preencha o .env com suas credenciais de dev
+# preencha o .env com suas credenciais
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
@@ -81,7 +72,6 @@ ngrok http 8000
 | `POST` | `/webhook` | Recebe eventos do UAZAPI |
 
 ```bash
-# Enviar mensagem via API
 curl -X POST https://seu-dominio.com/send \
   -H "Content-Type: application/json" \
   -d '{"number": "5511999999999", "text": "Olá!"}'
